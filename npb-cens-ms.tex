@@ -1,0 +1,289 @@
+\documentclass[12pt, a4paper]{elsarticle}
+
+% ------------ packages -------------
+
+\usepackage[utf8]{inputenc}
+\usepackage[OT1]{fontenc}
+\usepackage{graphicx}
+\usepackage[english]{babel}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{booktabs}
+\usepackage{todonotes}
+\usepackage{etoolbox}
+\usepackage{url}
+%\usepackage{tikz}
+%\usetikzlibrary{shapes.misc,fit}
+
+\usepackage[bookmarks]{hyperref}
+
+% ------------ custom defs -------------
+
+\usepackage{mathtools}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\newcommand{\reals}{\mathbb{R}}
+\newcommand{\posreals}{\reals_{>0}}
+\newcommand{\posrealszero}{\reals_{\ge 0}}
+\newcommand{\naturals}{\mathbb{N}}
+
+\newcommand{\mbf}[1]{\mathbf{#1}}
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\renewcommand{\vec}[1]{{\bs#1}}
+
+\newcommand{\uz}{^{(0)}} % upper zero
+\newcommand{\un}{^{(n)}} % upper n
+\newcommand{\ui}{^{(i)}} % upper i
+
+\newcommand{\ul}[1]{\underline{#1}}
+\newcommand{\ol}[1]{\overline{#1}}
+
+\newcommand{\Rsys}{R_\text{sys}}
+\newcommand{\lRsys}{\ul{R}_\text{sys}}
+\newcommand{\uRsys}{\ol{R}_\text{sys}}
+
+\newcommand{\Fsys}{F_\text{sys}}
+\newcommand{\lFsys}{\ul{F}_\text{sys}}
+\newcommand{\uFsys}{\ol{F}_\text{sys}}
+
+\def\Tsys{T_\text{sys}}
+
+\newcommand{\E}{\operatorname{E}}
+\newcommand{\V}{\operatorname{Var}}
+
+\newcommand{\indic}{\mathbb{I}}
+
+\newcommand{\ber}{\operatorname{Bernoulli}} 
+\newcommand{\bin}{\operatorname{Binomial}}
+\newcommand{\be}{\operatorname{Beta}} 
+\newcommand{\bebin}{\operatorname{Beta-Binomial}} 
+
+\def\tmax{t_\text{max}}
+\def\tnow{t_\text{now}}
+\def\tpnow{t^+_\text{now}}
+
+\newcommand{\ptk}{p^k_t}
+
+\input{nydefs.tex}
+
+%\newcommand{\comments}[1]{{\small\color{gray} #1}}
+\newtoggle{td}
+\newcommand{\td}[1]{%
+  \iftoggle{td}{%
+    \todo[inline]{#1}%
+  }{}%
+}
+
+% ------------ options -------------
+
+\allowdisplaybreaks
+
+\toggletrue{td} % show todo's
+%\togglefalse{td} % hide todo's
+
+%\biboptions{longnamesfirst,angle,semicolon}
+
+
+\journal{???}
+
+\begin{document}
+
+\begin{frontmatter}
+\title{Bayesian Nonparametric Estimation\\ of Remaining Useful Life using Sets of Priors}
+
+\author[ein]{Gero Walter}
+\ead{g.m.walter@tue.nl}
+\author{and others}
+
+\address[ein]{School of Industrial Engineering, Eindhoven University of Technology, Eindhoven, NL}
+
+\begin{abstract}
+An imprecise Bayesian nonparametric approach
+to system reliability with multiple types of components
+for which censored observations are allowed.
+This enables us to use component failure observations from a running system
+to calculate its remaining useful life.
+Two censoring assumptions are explored:
+a minimal assumption, making use of the greater expressiveness of imprecise probability,
+and the usual Kaplan-Meier-like assumption of noninformative censoring.
+Both approaches are illustrated in a case study.
+\end{abstract}
+
+\begin{keyword}
+System reliability \sep
+Survival signature \sep
+Imprecise probability \sep
+Bayesian nonparametrics \sep
+Prior-data conflict \sep
+Censoring mechanisms
+\end{keyword}
+\end{frontmatter}
+
+
+% ------------ manuscript -------------
+
+%\section{Introduction}
+For treatment of censored observations
+we see two potential approaches.
+First, to obtain lower and upper system reliability bounds 
+one can assume that a component either fails immediately after censoring or
+continues to function during the entire time horizon.
+This minimal assumption will be simple to implement but will lead to high imprecision.
+Alternatively, one can assume exchangeability with other surviving components at the moment of censoring.
+This approach will be more complex to accomodate but will lead to less imprecision.
+Indeed, this assumption lies at the core of the Kaplan-Meier estimator \citep{1958:kaplan-meier},
+and has already been adopted by \citet{2004:coolen-yan} in an imprecise probability context.\\
+
+
+
+The \emph{survival signature} for such a system, denoted by $\Phi(l_1,\ldots,l_K)$, with $l_k=0,1,\ldots,m_k$ 
+for $k=1,\ldots,K$, is defined as the probability for the event that the system functions given that \emph{precisely} $l_k$ of its 
+$m_k$ components of type $k$ function, for each $k\in \{1,\ldots,K\}$ \citep{2012:survsign}.
+Essentially, this creates a $K$-dimensional partition for the event $\Tsys > t$, such that $\Rsys(t) = P(\Tsys > t)$
+can be calculated using the law of total probability:
+\begin{align}
+\label{eq:rsyswithsurvsign}
+P(\Tsys > t)
+ &= \sum_{l_1=0}^{m_1} \cdots \sum_{l_K=0}^{m_K} P(\Tsys > t \mid C^1_t = l_1,\ldots, C^K_t = l_K) \nonumber\\
+ &  \hspace*{24ex}                        \times P\Big( \bigcap_{k=1}^K \{ C^k_t = l_k\} \Big) \nonumber\\
+ &= \sum_{l_1=0}^{m_1} \cdots \sum_{l_K=0}^{m_K} \Phi(l_1, \ldots, l_K)
+                                                 P\Big( \bigcap_{k=1}^K \{ C^k_t = l_k\} \Big) \,,
+%                                                 \prod_{k=1}^K P(C^k_t = l_k) \,.
+\end{align}
+where $C^k_t \in \{0, 1, \ldots, m_k\}$ denotes
+the random number of components of type $k$ functioning at time $t$.\\
+
+
+
+Let us denote the random failure time of component number $i$ of type $k$ by $T^k_i$, $i = 1, \ldots, m_k$.
+The failure time distribution can be written in terms of the cdf $F^k(t) = P(T^k_i \le t)$,
+or in terms of the reliability function $R^k(t) = P(T^k_i > t) = 1 - F^k(t)$,
+also known as the survival function.
+For a nonparametric description of $R^k(t)$,
+we consider a set of time points $t$, $t \in {\cal T} = \{t_1, \ldots, \tmax\}$.
+
+At each time point $t$, the operational state of a single component of type $k$
+is Bernoulli distributed (functioning: 1, failed: 0) with parameter $\ptk$, so that
+\begin{align*}
+P\big(\indic(T^k_i > t) = 1\big) &= \ptk\,, \\
+P\big(\indic(T^k_i > t) = 0\big) &= 1 - \ptk\,,
+\end{align*}
+That is, $\indic(T^k_i > t) \sim \ber(\ptk)$, $i = 1, \ldots, m_k$, $t \in {\cal T}$.
+The set of probabilities $\{ \ptk, t \in {\cal T}\}$
+defines a discrete failure time distribution for components of type $k$ through
+\begin{align*}
+R^k(t_j) &= P(T^k > t_j) = p^k_{t_j},\ t_j = t_1, \ldots, \tmax\,.
+\end{align*}
+We can also express this failure time distribution through the probability mass function (pmf) and discrete hazard function,
+\begin{align*}
+f^k(t_j) &= P\big(T^k \in (t_j,t_{j+1}]\big) = p^k_{t_j} - p^k_{t_{j+1}}\,,\\ 
+h^k(t_j) &= P\big(T^k \in (t_j,t_{j+1}]\mid T^k > t_j\big) = \frac{f^k(t_j)}{R^k(t_j)}\,. % or R^k(t_{j-1}) ???
+\end{align*}
+The time grid $\cal T$ can be chosen to be appropriately dense for the application at hand,
+with the natural extension between grid points by taking $R^k(\cdot)$ to be the right continuous step function induced by the grid values,
+$R^k(t) = p^k_{t_j}, t \in [t_j, t_{j+1})$,
+or by taking $p^k_{t_j}$ and $p^k_{t_{j+1}}$ as upper and lower bounds for $R^k(t)$, $t \in [t_j, t_{j+1})$.
+
+The independence assumption for components of the same type immediately implies that 
+the number of functioning components of type $k$ in the system
+is binomially distributed, $C^k_t = \sum_{i=1}^{m_k} \indic(T^k_i > t) \sim \bin(\ptk, m_k)$.\\
+
+
+
+We take as prior for each $\ptk$ a Beta distribution with canonical parameters $\nz_{k,t}$ and $\yz_{k,t}$,
+such that the posterior predictive probability of $l_k$ components of type $k$ functioning at time $t$
+is a Beta-Binomial distribution:
+\begin{align}
+P(C^k_t = l_k \mid s^k_t) &= {m_k \choose l_k} \frac{B(l_k + \nn_{k,t}\yn_{k,t}, m_k - l_k + \nn_{k,t}(1-\yn_{k,t}))}
+                                                    {B(\nn_{k,t}\yn_{k,t}, \nn_{k,t}(1-\yn_{k,t}))} \,,
+\label{eq:postpredCny}
+\end{align}
+
+%Sets of system reliability functions:
+To obtain the lower and upper bound for the system reliability function $\Rsys(t)$,
+we now need to minimise and maximise Equation~\eqref{eq:rsyswithsurvsign} over $\PtZi{1}, \ldots, \PtZi{K}$ for each $t$,
+where the posterior predictive probabilities for $C^k_t$ are given by the Beta-Binomial pmf \eqref{eq:postpredCny}.
+We therefore have
+\begin{align}
+\lefteqn{\lRsys(t \mid \vec{t}^1, \ldots, \vec{t}^K)} \nonumber \\
+ &= \min_{\PtZi{1}, \ldots, \PtZi{K}} \Rsys(t \mid \PtZi{1}, \ldots, \PtZi{K}, \vec{t}^1, \ldots, \vec{t}^K) \nonumber \\
+ &= \min_{\PtZi{1}, \ldots, \PtZi{K}} 
+    \sum_{l_1=0}^{m_1} \cdots \sum_{l_K=0}^{m_K} \Phi(l_1, \ldots, l_K)
+                                                 \prod_{k=1}^K P(C^k_t = l_k \mid \yktz, \nktz, s^k_t) \nonumber \\
+ &= \min_{\PtZi{1}, \ldots, \PtZi{K}} 
+    \sum_{l_1=0}^{m_1} \cdots \sum_{l_K=0}^{m_K} \Phi(l_1, \ldots, l_K) \times \nonumber \\ & \hspace*{12ex}
+    \prod_{k=1}^K {m_k \choose l_k} \frac{B(l_k + \nn_{k,t}\yn_{k,t}, m_k - l_k + \nn_{k,t}(1-\yn_{k,t}))}
+                                         {B(\nn_{k,t}\yn_{k,t}, \nn_{k,t}(1-\yn_{k,t}))} \nonumber \\
+ &= \min_{\PtZi{1}, \ldots, \PtZi{K}} 
+    \sum_{l_1=0}^{m_1} \cdots \sum_{l_K=0}^{m_K} \Phi(l_1, \ldots, l_K) \times \nonumber \\ & \hspace*{8ex}
+    \prod_{k=1}^K {m_k \choose l_k} \frac{B(l_k + \nktz\yktz + s^k_t, m_k - l_k + \nktz(1-\yktz) + n_k - s^k_t)}{B(\nktz\yktz + s^k_t, \nktz(1-\yktz) + n_k - s^k_t)}
+    \,, \label{eq:LwrSysPostA}
+\end{align}
+and similarly maximising for $\uRsys(\cdot)$.
+
+Note that $\Phi(\cdot)$ is non-decreasing in each of its arguments $l_1,\ldots,l_K$,
+thus if there is first-order stochastic ordering on $P(C^k_t = l_k \mid \yktz, \nktz, s^k_t)$
+for each $k$, then this ordering can be used to determine the elements of $\PtZi{k}$
+which minimise and maximise the overall system reliability function without
+resorting to computationally expensive exhaustive searches or numerical optimisation.
+
+We therefore start by providing the following result, where indices are suppressed for readability.
+We use $\ge_{\mathrm{st}}$ to denote first-order stochastic dominance.
+
+\begin{theorem}
+  \label{thm:y}
+  Let $\beta_y$ denote the Beta-Binomial distribution with probability mass function parameterised as:
+  \[ p(l \mid y, n, m, s, N) \propto \frac{B(l + ny + s, m - l + n(1-y) + N - s)}{B(ny + s, n(1-y) + N - s)}, \]
+  with $n, m, s,$ and $N$ fixed and unknown.
+  
+  Then $\beta_{\yu} \ge_{\mathrm{st}} \beta_{\yl} \ \forall \ \yu > \yl$ with $\yu, \yl \in (0,1)$.
+\end{theorem}
+
+\begin{proof}%[\textbf{Proof of Theorem \ref{thm:y}, p\pageref{thm:y}}]
+  \label{prf:y}
+  Consider the likelihood ratio for the two Beta-Binomial distributions $\beta_{\yu}$ and $\beta_{\yl}$,
+  \begin{align*}
+    \lefteqn{\mathcal{L}(l) := \frac{p(l \mid \yu, n, m, s, N)}{p(l \mid \yl, n, m, s, N)}} \\
+    &= \frac{B(l + n \yu + s, m - l + n (1 - \yu) + N - s) B(n \yl + s, n (1 - \yl) + N - s)}
+            {B(n \yu + s, n (1 - \yu) + N - s) B(l + n \yl + s, m - l + n (1 - \yl) + N - s)} \\
+    &= \frac{\Gamma(l + n \yu + s) \Gamma(m - l + n (1 - \yu) + N - s) \Gamma(n \yl + s) \Gamma(n (1 - \yl) + N - s)}
+            {\Gamma(l + n \yl + s) \Gamma(m - l + n (1 - \yl) + N - s) \Gamma(n \yu + s) \Gamma(n (1 - \yu) + N - s)} \\
+    &= \left\{ \begin{aligned}
+         \frac{\prod_{x=0}^{m-1} (x + n (1 - \yu) + N - s)}
+              {\prod_{x=0}^{m-1} (x + n (1 - \yl) + N - s)} &\quad\mbox{ for } l=0 \\
+         \frac{\prod_{x=0}^{l-1} (x + n \yu + s) \prod_{x=0}^{m-l-1} (x + n (1 - \yu) + N - s)}
+              {\prod_{x=0}^{l-1} (x + n \yl + s) \prod_{x=0}^{m-l-1} (x + n (1 - \yl) + N - s)} &\quad\mbox{ for } 0<l<m \\
+         \frac{\prod_{x=0}^{m-1} (x + n \yu + s)}
+              {\prod_{x=0}^{m-1} (x + n \yl + s)} &\quad\mbox{ for } l=m
+       \end{aligned} \right.
+  \end{align*}
+  since $\Gamma(x+1)=x \Gamma(x)$.
+  
+  Thus,
+  \begin{align*}
+    \frac{\mathcal{L}(l+1)}{\mathcal{L}(l)} &=
+      \frac{(l + n \yu + s) (m - l - 1 + n (1 - \yl) + N - s)}
+           {(l + n \yl + s) (m - l - 1 + n (1 - \yu) + N - s)} \\
+    &> 1 \quad\mbox{when}\quad 0 \le \yl < \yu \le 1
+  \end{align*}
+    
+  Hence, $\mathcal{L}(\cdot)$ is monotone increasing for $0 < \yl < \yu < 1$, so that $\beta_{\yu}$ is larger than or equal to $\beta_{\yl}$ in monotone likelihood ratio order ($\beta_{\yu} \ge_\mathrm{lr} \beta_{\yl}$).  But, $\beta_{\yu} \ge_\mathrm{lr} \beta_{\yl} \implies \beta_{\yu} \ge_\mathrm{st} \beta_{\yl}$ (\cite[Theorem 1.C.1, p.43]{shaked2007}) giving the required result.
+\end{proof}
+
+% ------------ bibliography -------------
+
+\section*{References}
+
+\bibliographystyle{elsarticle-harv}
+\bibliography{npb-cens-refs}
+
+\end{document}
