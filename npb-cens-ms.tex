@@ -131,7 +131,8 @@ Censoring mechanisms
 
 % ------------ manuscript -------------
 
-%\section{Introduction}
+\section{Introduction}
+
 For treatment of censored observations
 we see two potential approaches.
 First, to obtain lower and upper system reliability bounds 
@@ -171,7 +172,8 @@ also known as the survival function.
 For a nonparametric description of $R^k(t)$,
 we consider a set of time points $t$, $t \in {\cal T} = \{t_1, \ldots, \tmax\}$.
 
-At each time point $t$, the operational state of a single component of type $k$
+When considering uncensored data,
+at each time point $t$, the operational state of a single component of type $k$
 is Bernoulli distributed (functioning: 1, failed: 0) with parameter $\ptk$, so that
 \begin{align*}
 P\big(\indic(T^k_i > t) = 1\big) &= \ptk\,, \\
@@ -186,7 +188,9 @@ R^k(t_j) &= P(T^k > t_j) = p^k_{t_j},\ t_j = t_1, \ldots, \tmax\,.
 We can also express this failure time distribution through the probability mass function (pmf) and discrete hazard function,
 \begin{align*}
 f^k(t_j) &= P\big(T^k \in (t_j,t_{j+1}]\big) = p^k_{t_j} - p^k_{t_{j+1}}\,,\\ 
-h^k(t_j) &= P\big(T^k \in (t_j,t_{j+1}]\mid T^k > t_j\big) = \frac{f^k(t_j)}{R^k(t_j)}\,. % or R^k(t_{j-1}) ???
+h^k(t_j) &= P\big(T^k \in (t_j,t_{j+1}]\mid T^k > t_j\big) % or R^k(t_{j-1}) ???
+          = \frac{f^k(t_j)}{R^k(t_j)}
+          = \frac{p^k_{t_j} - p^k_{t_{j+1}}}{p^k_{t_j}}\,.
 \end{align*}
 The time grid $\cal T$ can be chosen to be appropriately dense for the application at hand,
 with the natural extension between grid points by taking $R^k(\cdot)$ to be the right continuous step function induced by the grid values,
@@ -200,11 +204,14 @@ is binomially distributed, $C^k_t = \sum_{i=1}^{m_k} \indic(T^k_i > t) \sim \bin
 
 
 We take as prior for each $\ptk$ a Beta distribution with canonical parameters $\nz_{k,t}$ and $\yz_{k,t}$,
-such that the posterior predictive probability of $l_k$ components of type $k$ functioning at time $t$
+such that the posterior predictive probability of $l_k$ out of $m_k$ components of type $k$ functioning at time $t$
 is a Beta-Binomial distribution:
 \begin{align}
-P(C^k_t = l_k \mid s^k_t) &= {m_k \choose l_k} \frac{B(l_k + \nn_{k,t}\yn_{k,t}, m_k - l_k + \nn_{k,t}(1-\yn_{k,t}))}
-                                                    {B(\nn_{k,t}\yn_{k,t}, \nn_{k,t}(1-\yn_{k,t}))} \,,
+\lefteqn{P(C^k_t = l_k \mid s^k_t)} \nonumber \\
+ &= {m_k \choose l_k} \frac{B(l_k + \nn_{k,t}\yn_{k,t}, m_k - l_k + \nn_{k,t}(1-\yn_{k,t}))}
+                           {B(\nn_{k,t}\yn_{k,t}, \nn_{k,t}(1-\yn_{k,t}))} \nonumber \\
+ &= {m_k \choose l_k} \frac{B(l_k + \nktz\yktz + s^k_t, m_k - l_k + \nktz(1-\yktz) + n_k - s^k_t)}
+                           {B(\nktz\yktz + s^k_t, \nktz(1-\yktz) + n_k - s^k_t)} \,.
 \label{eq:postpredCny}
 \end{align}
 
@@ -225,11 +232,44 @@ We therefore have
                                          {B(\nn_{k,t}\yn_{k,t}, \nn_{k,t}(1-\yn_{k,t}))} \nonumber \\
  &= \min_{\PtZi{1}, \ldots, \PtZi{K}} 
     \sum_{l_1=0}^{m_1} \cdots \sum_{l_K=0}^{m_K} \Phi(l_1, \ldots, l_K) \times \nonumber \\ & \hspace*{8ex}
-    \prod_{k=1}^K {m_k \choose l_k} \frac{B(l_k + \nktz\yktz + s^k_t, m_k - l_k + \nktz(1-\yktz) + n_k - s^k_t)}{B(\nktz\yktz + s^k_t, \nktz(1-\yktz) + n_k - s^k_t)}
+    \prod_{k=1}^K {m_k \choose l_k} \frac{B(l_k + \nktz\yktz + s^k_t, m_k - l_k + \nktz(1-\yktz) + n_k - s^k_t)}
+                                         {B(\nktz\yktz + s^k_t, \nktz(1-\yktz) + n_k - s^k_t)}
     \,, \label{eq:LwrSysPostA}
+\intertext{which, due to results from \citet{2016:bayessurvsignsets}, can be obtained as}
+ &= \sum_{l_1=0}^{m_1} \cdots \sum_{l_K=0}^{m_K} \Phi(l_1, \ldots, l_K) \times \nonumber \\ & \hspace*{8ex}
+    \prod_{k=1}^K {m_k \choose l_k} \frac{B(l_k + \nktzo\yktzl + s^k_t, m_k - l_k + \nktzo(1-\yktzl) + n_k - s^k_t)}
+                                         {B(\nktzo\yktzl + s^k_t, \nktzo(1-\yktzl) + n_k - s^k_t)}\,,
+\label{eq:LwrSysPost}\\
+ &\mathrm{where} \nonumber \\
+ &\nktzo = \left\{ \begin{aligned}
+   \nktzu & \quad\mbox{if}\ \yktzl < \frac{s^k_t}{n_k + m_k - 1} \vee \Big( \mathcal{L}_{\nktzu,\nktzl}(0) \ge 1 \wedge \mathcal{L}_{\nktzu,\nktzl}(m) \le 1 \Big) \\
+   \nktzl & \quad\mbox{if}\ \yktzl > \frac{s^k_t + m_k - 1}{n_k + m_k - 1} \vee \Big( \mathcal{L}_{\nktzu,\nktzl}(0) \le 1 \wedge \mathcal{L}_{\nktzu,\nktzl}(m) \ge 1 \Big) \\
+   & \quad\mbox{optimised otherwise}
+ \end{aligned} \right. \nonumber
 \end{align}
-and similarly maximising for $\uRsys(\cdot)$.
+The result for $\uRsys(\cdot)$ is completely analogous.
 
+\section{Minimal assumption for censoring}
+
+The imprecise probability framework we are using
+allows us to employ a minimal assumption for censored observations:
+We will get an upper bound for component survival by assuming that 
+a censored component will not fail until the end of the considered time horizon,
+i.e., by counting all censored observations as functioning when determining $s^k_t$.
+A lower bound for component survival is obtained by assuming that
+a censored component will fail immediately after the censoring time,
+i.e., by counting all censored observations as failed when determining $s^k_t$.
+The software implementation of \eqref{eq:LwrSysPost} in the \textsf{R}
+\citep{R} package \texttt{ReliabilityTheory} \citep{2015:aslett-RT},
+which assumes complete, noncensored observations,
+can thus be used by suitably altering the component test data ($\vec{t}^1, \ldots, \vec{t}^K$).
+
+Lower and upper bound are obtained due to first-order stochastic dominance
+of the Beta-Binomial distribution \eqref{eq:postpredCny} with regard to $s^k_t$,
+analogously to Theorem~1 from \citet{2016:bayessurvsignsets}
+which establishes first-order stochastic dominance with regard to $\yktz$.\\
+
+*** adapt the following for $s^k_t$ in place of $\yktz$***\\
 Note that $\Phi(\cdot)$ is non-decreasing in each of its arguments $l_1,\ldots,l_K$,
 thus if there is first-order stochastic ordering on $P(C^k_t = l_k \mid \yktz, \nktz, s^k_t)$
 for each $k$, then this ordering can be used to determine the elements of $\PtZi{k}$
