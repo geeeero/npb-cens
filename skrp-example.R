@@ -1,55 +1,65 @@
 # using SKPR data & expert knowledge for drive side ball bearing of the suction press
 
-#install.packages("devtools")
-#library("devtools")
-#install_github("louisaslett/ReliabilityTheory")
-library("ReliabilityTheory")
-library(ggplot2)
-library(reshape2)
-library(RColorBrewer)
-library(xtable)
+source("setup.R")
 
-setwd("../npb-cens")
-
-bottomlegend <- theme(legend.position = 'bottom', legend.direction = 'horizontal', legend.title = element_blank())
-rightlegend <- theme(legend.title = element_blank())
-
-# produces survival signature matrix for one component of type "name",
-# for use in nonParBayesSystemInference()
-oneCompSurvSign <- function(name){
-  res <- data.frame(name=c(0,1), Probability=c(0,1))
-  names(res)[1] <- name
-  res
-}
-
-# produces data frame with prior and posterior lower & upper component survival function
-# for component of type "name" based on nonParBayesSystemInferencePriorSets() inputs
-# for all components except survival signature; nLower, nUpper, yLower, yUpper must be data frames
-# where each column corresponds to the component type, so there must be a match 
-oneCompPriorPostSet <- function(name, at.times, test.data, nLower, nUpper, yLower, yUpper){
-  sig <- oneCompSurvSign(name)
-  nodata <- list(name=NULL)
-  names(nodata) <- name
-  nL <- nLower[, match(name, names(nLower))]
-  nU <- nUpper[, match(name, names(nUpper))]
-  yL <- yLower[, match(name, names(yLower))]
-  yU <- yUpper[, match(name, names(yUpper))]
-  data <- test.data[match(name, names(test.data))]
-  prio <- nonParBayesSystemInferencePriorSets(at.times, sig, nodata, nL, nU, yL, yU)
-  post <- nonParBayesSystemInferencePriorSets(at.times, sig,   data, nL, nU, yL, yU)
-  data.frame(Time=rep(at.times,2), Lower=c(prio$lower,post$lower), Upper=c(prio$upper,post$upper),
-             Item=rep(c("Prior", "Posterior"), each=length(at.times)))
-}
-
-# ----------------------------------------------
-
+# field data: bearing lifetime in days
 skrpfielddata <- read.csv("SKRP_DriveSideBearingSuctionPressDATA.csv", sep=";", header=FALSE,
                           colClasses = c("NULL", "numeric", "NULL", "factor"), skip=4)
 names(skrpfielddata) <- c("time", "cens")
 skrpfielddata$cens <- as.numeric(skrpfielddata$cens == "Uncensored")
 
+# expert info: bearing lifetime in years
 skrpexpert <- read.csv("SKRP_DriveSideBearingSuctionPressEXPERT.csv", sep=";", header=FALSE,
                        colClasses = c("numeric", "numeric", "numeric", rep("NULL", 17)), skip=3, dec=",")
 names(skrpexpert) <- c("timel", "timeu", "freq")
 
+g <- ggplot(data=skrpexpert)
+g + geom_bar(aes(x=timeu, y=freq), stat="identity")
+
+skrpetimes <- (skrpexpert$timel + skrpexpert$timeu)/2
+skrpe <- data.frame(Time=rep(skrpetimes, times=skrpexpert$freq))
+ggplot(skrpe, aes(x=Time)) + geom_histogram(breaks=seq(0, 10, by=0.5))
+
+# transform into days
+skrpexpert$timel <- skrpexpert$timel * 365
+skrpexpert$timeu <- skrpexpert$timeu * 365
+
+g <- ggplot(data=skrpexpert, aes(x=timeu, y=1-cumsum(freq)/100))
+g + geom_step(direction="vh") + geom_step(direction="hv")
+
+# reliability values from freq
+skrpexpert <- data.frame(skrpexpert, rel = 1-cumsum(skrpexpert$freq)/100)
+skrpe2 <- data.frame(Time=c(0, skrpexpert$timeu), rell=c(skrpexpert$rel, 0), relu=c(1, skrpexpert$rel))
+skrpe2 <- skrpe2[-21,]
+
+# time grid interval: 18.25 days, such that 10 years = 200 time points
+e3t <- seq(0, 3650, by=18.25)
+e3nL <- data.frame(Bearing = rep(14, 201))
+e3nU <- data.frame(Bearing = rep(100, 201))
+e3yL <- data.frame(Bearing = c(rep(skrpe2$rell, each=10), 0))
+e3yU <- data.frame(Bearing = c(rep(skrpe2$relu, each=10), 0.01))
+#ggplot() + geom_line(aes(x=e3t, y=e3yL$Bearing)) + geom_line(aes(x=e3t, y=e3yU$Bearing))
+e3yL <- not01(e3yL)
+e3yU <- not01(e3yU)
+
+# 'upper', optimistic data: censored bearings continue to function
+uncens <- skrpfielddata$time[skrpfielddata$cens == 1]
+udata <- c(uncens, rep(max(e3t)+1, dim(skrpfielddata)[1] - length(uncens)))
+# 'lower', pessimistic data: censoring times are actually failure times
+e3dL <- list(Bearing = skrpfielddata$time)
+e3dU <- list(Bearing = udata)
+
+e3resL <- oneCompPriorPostSet("Bearing", e3t, e3dL, e3nL, e3nU, e3yL, e3yU)
+e3resU <- oneCompPriorPostSet("Bearing", e3t, e3dU, e3nL, e3nU, e3yL, e3yU)
+
+e3df <- data.frame(      e3resL[,-match("Upper", names(e3resL))], # take out Upper from result with lower data
+                   Upper=e3resU[, match("Upper", names(e3resU))]) # add Upper from result with upper data
+priopostcolours1 <- scale_fill_manual(values = c(tuegreen, tuedarkblue))
+priopostcolours2 <- scale_colour_manual(values = c(tuegreen, tuedarkblue))
+
+e3plot <- ggplot(e3df, aes(x=Time)) + priopostcolours1 + priopostcolours2 
+e3plot <- e3plot + geom_line(aes(y=Upper, group=Item, colour=Item)) + geom_line(aes(y=Lower, group=Item, colour=Item))
+e3plot <- e3plot + geom_ribbon(aes(ymin=Lower, ymax=Upper, group=Item, colour=Item, fill=Item), alpha=0.5)
+e3plot <- e3plot + xlab("Time") + ylab("Survival Probability") + bottomlegend
+e3plot
 #
