@@ -7,6 +7,10 @@ skrpfielddata <- read.csv("SKRP_DriveSideBearingSuctionPressDATA.csv", sep=";", 
                           colClasses = c("NULL", "numeric", "NULL", "factor"), skip=4)
 names(skrpfielddata) <- c("time", "cens")
 skrpfielddata$cens <- as.numeric(skrpfielddata$cens == "Uncensored")
+skrpd <- data.frame(skrpfielddata, rank=rank(skrpfielddata$time))
+qplot(data=skrpd, x=rank, ymin=rep(0,14), y=time, ymax=time, label=time, vjust=-0.5,
+      geom=c("pointrange", "text"), shape=factor(cens)) + coord_flip() + scale_x_reverse() +
+  scale_shape_manual(values=c(1, 19), label=c("No", "Yes"), name="Failure")
 
 # expert info: bearing lifetime in years
 skrpexpert <- read.csv("SKRP_DriveSideBearingSuctionPressEXPERT.csv", sep=";", header=FALSE,
@@ -60,6 +64,6 @@ priopostcolours2 <- scale_colour_manual(values = c(tuegreen, tuedarkblue))
 e3plot <- ggplot(e3df, aes(x=Time)) + priopostcolours1 + priopostcolours2 
 e3plot <- e3plot + geom_line(aes(y=Upper, group=Item, colour=Item)) + geom_line(aes(y=Lower, group=Item, colour=Item))
 e3plot <- e3plot + geom_ribbon(aes(ymin=Lower, ymax=Upper, group=Item, colour=Item, fill=Item), alpha=0.5)
-e3plot <- e3plot + xlab("Time") + ylab("Survival Probability") + bottomlegend
+e3plot <- e3plot + xlab("Days") + ylab("Survival Probability") + bottomlegend + scale_x_continuous(breaks=(0:10)*365)
 e3plot
 #
