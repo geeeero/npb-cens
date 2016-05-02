@@ -7,6 +7,7 @@ skrpfielddata <- read.csv("SKRP_DriveSideBearingSuctionPressDATA.csv", sep=";", 
                           colClasses = c("NULL", "numeric", "NULL", "factor"), skip=4)
 names(skrpfielddata) <- c("time", "cens")
 skrpfielddata$cens <- as.numeric(skrpfielddata$cens == "Uncensored")
+skrpfielddata <- skrpfielddata[order(skrpfielddata$time),]
 skrpd <- data.frame(skrpfielddata, rank=rank(skrpfielddata$time))
 qplot(data=skrpd, x=rank, ymin=rep(0,14), y=time, ymax=time, label=time, vjust=-0.5,
       geom=c("pointrange", "text"), shape=factor(cens)) + coord_flip() + scale_x_reverse() +

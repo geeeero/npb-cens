@@ -249,6 +249,7 @@ We therefore have
 \end{align}
 The result for $\uRsys(\cdot)$ is completely analogous.
 
+
 \section{Minimal assumption for censoring}
 
 The imprecise probability framework we are using
@@ -318,6 +319,71 @@ We use $\ge_{\mathrm{st}}$ to denote first-order stochastic dominance.
     
   Hence, $\mathcal{L}(\cdot)$ is monotone increasing for $0 < \yl < \yu < 1$, so that $\beta_{\yu}$ is larger than or equal to $\beta_{\yl}$ in monotone likelihood ratio order ($\beta_{\yu} \ge_\mathrm{lr} \beta_{\yl}$).  But, $\beta_{\yu} \ge_\mathrm{lr} \beta_{\yl} \implies \beta_{\yu} \ge_\mathrm{st} \beta_{\yl}$ (\cite[Theorem 1.C.1, p.43]{shaked2007}) giving the required result.
 \end{proof}
+
+When a large part of the observations is censored,
+this approach leads to high posterior imprecision,
+which may easily exceed prior imprecision.
+This is illustrated in ***bearing example?***
+
+
+\section{Noninformative censoring assumption}
+
+Let us first fix some notation, dropping the superscript $k$ for component types for a while.
+Assuming event times and censoring times ordered separately,
+we denote event times by $t_i$, $i=1, \ldots n_e$,
+and censoring times by $c_i$, $i=1, \ldots n_c$,
+thus $n_e + n_c = n$.
+The \emph{risk set} at time $t$ gives the set of units at risk at time $t$,
+which is the set of observations that neither have had an event nor have been censored by time $t$,
+$\{n_i \mid n_i > t \} \cup \{ c_i \mid c_i > t \}$.
+We denote the size of the risk set just before a censoring time $c_i$ by $n_{c_i}$,
+% the moment of censoring of the $i$th censored observation
+i.e., $n_{c_i} = \#(\{ n_j \mid n_j \ge c_i \} \cup \{ c_j \mid c_j \ge c_i \})$.
+%The risk set just before the moment of censoring
+%consists of these observations and the observation about to be censored.
+(Note that $n_{c_i}$ includes $c_i$.)
+
+In noninformative censoring, one assumes that
+at the moment of censoring, a censored observation's unknown remaining lifetime
+is exchangeable with the remaining lifetimes of all other units that were at risk at that moment. %in the current risk set.
+Therefore, the rank of the unknown failure time for $c_i$ is uniformly distributed among the possible ranks $1, \ldots, n_{c_i}$,
+where rank $1$ would mean that the unit actually fails before the next event or censoring time,
+and rank $n_{c_i}$ would mean that the unit fails only after the last event or censoring time.
+%$\max \{ t_1, \ldots, t_{n_e}, c_1, \ldots, n_{n_c}$.
+Consequently, the unknown failure time may fall, with equal probability,
+in each of the $n_{c_i}$ intervals formed by the censoring and event times for observations in the risk set,
+setting infinity as the upper bound for the rightmost interval.
+
+When counting the number of functioning components at a time $t$,
+we can count the censored components accordingly:
+As an example, assume four components having failure and censoring times $t_1 < c_1 < c_2 < t_2$.
+Thus $n_{c_1} = 3$, as there is one failure time and one censoring time after $c_1$.
+We expect this component to fail with $1/3$ probability in each of
+$(c_1, c_2]$, $(c_2, t_2]$, and $(t_2, \infty)$,
+that is, in each of these intervals we expect a third of a component to be functioning
+due to this censored component.
+Likewise, we expect the second censored component to fail with $1/2$ probability
+in each of $(c_2, t_2]$ and $(t_2, \infty)$,
+and so expect half a functioning component in both intervals.
+%
+As illustrated in Figure~***,
+we get $s_t = 2 + 1/3$ for $t \in (c_1, c_2]$,
+$s_t = 1 + 1/3 + 1/2$ for $t \in (c_2, t_2]$,
+and $s_t = 0 + 1/3 + 1/2$ for $t \in (t_2 \infty)$.
+
+This approach leads to precise values for $s_t^k$
+and so does not suffer from the dilation effects occuring with the minimal assumption.
+The price is the fairly strong assumption of noninformative censoring;
+it may be violated especially in the context of maintained systems,
+where components are replaced before failing (and thus being censored)
+precisely because maintenance staff presumes them to be failing soon.
+
+
+
+
+
+
+
 
 % ------------ bibliography -------------
 
