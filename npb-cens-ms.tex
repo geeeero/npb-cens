@@ -47,6 +47,9 @@
 \newcommand{\ul}[1]{\underline{#1}}
 \newcommand{\ol}[1]{\overline{#1}}
 
+%\newcommand{\lows}{\ul{s}}
+%\newcommand{\upps}{\ol{s}}
+
 \newcommand{\Rsys}{R_\text{sys}}
 \newcommand{\lRsys}{\ul{R}_\text{sys}}
 \newcommand{\uRsys}{\ol{R}_\text{sys}}
@@ -254,57 +257,60 @@ The result for $\uRsys(\cdot)$ is completely analogous.
 
 The imprecise probability framework we are using
 allows us to employ a minimal assumption for censored observations:
-We will get an upper bound for component survival by assuming that 
+An upper bound for component survival is obtained by assuming that 
 a censored component will not fail until the end of the considered time horizon,
 i.e., by counting all censored observations as functioning when determining $s^k_t$.
 A lower bound for component survival is obtained by assuming that
 a censored component will fail immediately after the censoring time,
 i.e., by counting all censored observations as failed when determining $s^k_t$.
+These bounds encompass, in contrast to usual assumptions for censoring,
+any kind of informative censoring or dependencies between censoring times and unobserved failure times. 
+This can of course lead to very wide bounds, depending on the fraction of censored observations in the data.
+
+Component survival bounds due to variation in $s^k_t$ are obtained via first-order stochastic dominance
+of the Beta-Binomial distribution \eqref{eq:postpredCny} with regard to $s^k_t$,
+established in Theorem~\ref{thm:s} below.
+This result is completely analogous to Theorem~1 from \citet{2016:bayessurvsignsets},
+which establishes first-order stochastic dominance with regard to $\yktz$.
+
+As discussed in \citet[\S 6]{2016:bayessurvsignsets},
+lower and upper bounds for the system reliability
+are obtained due to monotonicity of $\Phi(\cdot)$
+in each of its arguments $l_1,\ldots,l_K$.
 The software implementation of \eqref{eq:LwrSysPost} in the \textsf{R}
 \citep{R} package \texttt{ReliabilityTheory} \citep{2015:aslett-RT},
 which assumes complete, noncensored observations,
-can thus be used by suitably altering the component test data ($\vec{t}^1, \ldots, \vec{t}^K$).
+can thus be used by suitably altering the component test data ($\vec{t}^1, \ldots, \vec{t}^K$)
+for the two cases.
 
-Lower and upper bound are obtained due to first-order stochastic dominance
-of the Beta-Binomial distribution \eqref{eq:postpredCny} with regard to $s^k_t$,
-analogously to Theorem~1 from \citet{2016:bayessurvsignsets}
-which establishes first-order stochastic dominance with regard to $\yktz$.\\
-
-*** adapt the following for $s^k_t$ in place of $\yktz$***\\
-Note that $\Phi(\cdot)$ is non-decreasing in each of its arguments $l_1,\ldots,l_K$,
-thus if there is first-order stochastic ordering on $P(C^k_t = l_k \mid \yktz, \nktz, s^k_t)$
-for each $k$, then this ordering can be used to determine the elements of $\PtZi{k}$
-which minimise and maximise the overall system reliability function without
-resorting to computationally expensive exhaustive searches or numerical optimisation.
-
-We therefore start by providing the following result, where indices are suppressed for readability.
-We use $\ge_{\mathrm{st}}$ to denote first-order stochastic dominance.
+In Theorem~\ref{thm:s} below, indices are suppressed for readability,
+and we use $\ge_{\mathrm{st}}$ to denote first-order stochastic dominance.
 
 \begin{theorem}
-  \label{thm:y}
-  Let $\beta_y$ denote the Beta-Binomial distribution with probability mass function parameterised as:
+  \label{thm:s}
+  Let $\beta_s$ denote the Beta-Binomial distribution with probability mass function parameterised as:
   \[ p(l \mid y, n, m, s, N) \propto \frac{B(l + ny + s, m - l + n(1-y) + N - s)}{B(ny + s, n(1-y) + N - s)}, \]
-  with $n, m, s,$ and $N$ fixed and unknown.
+  with $y, n, m,$ and $N$ fixed and unknown.
   
-  Then $\beta_{\yu} \ge_{\mathrm{st}} \beta_{\yl} \ \forall \ \yu > \yl$ with $\yu, \yl \in (0,1)$.
+  Then $\beta_{\ol{s}} \ge_{\mathrm{st}} \beta_{\ul{s}} \ \forall \ \ol{s} > \ul{s} \ge 0$.
 \end{theorem}
 
-\begin{proof}%[\textbf{Proof of Theorem \ref{thm:y}, p\pageref{thm:y}}]
-  \label{prf:y}
-  Consider the likelihood ratio for the two Beta-Binomial distributions $\beta_{\yu}$ and $\beta_{\yl}$,
+\begin{proof}%[\textbf{Proof of Theorem \ref{thm:s}, p\pageref{thm:s}}]
+  \label{prf:s}
+  Consider the likelihood ratio for the two Beta-Binomial distributions $\beta_{\ol{s}}$ and $\beta_{\ul{s}}$,
   \begin{align*}
-    \lefteqn{\mathcal{L}(l) := \frac{p(l \mid \yu, n, m, s, N)}{p(l \mid \yl, n, m, s, N)}} \\
-    &= \frac{B(l + n \yu + s, m - l + n (1 - \yu) + N - s) B(n \yl + s, n (1 - \yl) + N - s)}
-            {B(n \yu + s, n (1 - \yu) + N - s) B(l + n \yl + s, m - l + n (1 - \yl) + N - s)} \\
-    &= \frac{\Gamma(l + n \yu + s) \Gamma(m - l + n (1 - \yu) + N - s) \Gamma(n \yl + s) \Gamma(n (1 - \yl) + N - s)}
-            {\Gamma(l + n \yl + s) \Gamma(m - l + n (1 - \yl) + N - s) \Gamma(n \yu + s) \Gamma(n (1 - \yu) + N - s)} \\
+    \lefteqn{\mathcal{L}(l) := \frac{p(l \mid y, n, m, \ol{s}, N)}{p(l \mid y, n, m, \ul{s}, N)}} \\
+    &= \frac{B(l + n y + \ol{s}, m - l + n (1 - y) + N - \ol{s}) B(    n y + \ul{s},         n (1 - y) + N - \ul{s})}
+            {B(    n y + \ol{s},         n (1 - y) + N - \ol{s}) B(l + n y + \ul{s}, m - l + n (1 - y) + N - \ul{s})} \\
+    &= \frac{\Gamma(l + n y + \ol{s}) \Gamma(m - l + n (1 - y) + N - \ol{s}) \Gamma(n y + \ul{s}) \Gamma(n (1 - y) + N - \ul{s})}
+            {\Gamma(l + n y + \ul{s}) \Gamma(m - l + n (1 - y) + N - \ul{s}) \Gamma(n y + \ol{s}) \Gamma(n (1 - y) + N - \ol{s})} \\
     &= \left\{ \begin{aligned}
-         \frac{\prod_{x=0}^{m-1} (x + n (1 - \yu) + N - s)}
-              {\prod_{x=0}^{m-1} (x + n (1 - \yl) + N - s)} &\quad\mbox{ for } l=0 \\
-         \frac{\prod_{x=0}^{l-1} (x + n \yu + s) \prod_{x=0}^{m-l-1} (x + n (1 - \yu) + N - s)}
-              {\prod_{x=0}^{l-1} (x + n \yl + s) \prod_{x=0}^{m-l-1} (x + n (1 - \yl) + N - s)} &\quad\mbox{ for } 0<l<m \\
-         \frac{\prod_{x=0}^{m-1} (x + n \yu + s)}
-              {\prod_{x=0}^{m-1} (x + n \yl + s)} &\quad\mbox{ for } l=m
+         \frac{\prod_{x=0}^{m-1} (x + n (1 - y) + N - \ol{s})}
+              {\prod_{x=0}^{m-1} (x + n (1 - y) + N - \ul{s})} &\quad\mbox{ for } l=0 \\
+         \frac{\prod_{x=0}^{l-1} (x + n y + \ol{s}) \prod_{x=0}^{m-l-1} (x + n (1 - y) + N - \ol{s})}
+              {\prod_{x=0}^{l-1} (x + n y + \ul{s}) \prod_{x=0}^{m-l-1} (x + n (1 - y) + N - \ul{s})} &\quad\mbox{ for } 0<l<m \\
+         \frac{\prod_{x=0}^{m-1} (x + n y + \ol{s})}
+              {\prod_{x=0}^{m-1} (x + n y + \ul{s})} &\quad\mbox{ for } l=m
        \end{aligned} \right.
   \end{align*}
   since $\Gamma(x+1)=x \Gamma(x)$.
@@ -312,12 +318,16 @@ We use $\ge_{\mathrm{st}}$ to denote first-order stochastic dominance.
   Thus,
   \begin{align*}
     \frac{\mathcal{L}(l+1)}{\mathcal{L}(l)} &=
-      \frac{(l + n \yu + s) (m - l - 1 + n (1 - \yl) + N - s)}
-           {(l + n \yl + s) (m - l - 1 + n (1 - \yu) + N - s)} \\
-    &> 1 \quad\mbox{when}\quad 0 \le \yl < \yu \le 1
+      \frac{(l + n y + \ol{s}) (m - l - 1 + n (1 - y) + N - \ul{s})}
+           {(l + n y + \ul{s}) (m - l - 1 + n (1 - y) + N - \ol{s})} \\
+    &> 1 \quad\mbox{when}\quad \ol{s} > \ul{s} \ge 0
   \end{align*}
     
-  Hence, $\mathcal{L}(\cdot)$ is monotone increasing for $0 < \yl < \yu < 1$, so that $\beta_{\yu}$ is larger than or equal to $\beta_{\yl}$ in monotone likelihood ratio order ($\beta_{\yu} \ge_\mathrm{lr} \beta_{\yl}$).  But, $\beta_{\yu} \ge_\mathrm{lr} \beta_{\yl} \implies \beta_{\yu} \ge_\mathrm{st} \beta_{\yl}$ (\cite[Theorem 1.C.1, p.43]{shaked2007}) giving the required result.
+Hence, $\mathcal{L}(\cdot)$ is monotone increasing for $\ol{s} > \ul{s} \ge 0$,
+so that $\beta_{\ol{s}}$ is larger than or equal to $\beta_{\ul{s}}$ in monotone likelihood ratio order
+($\beta_{\ol{s}} \ge_\mathrm{lr} \beta_{\ul{s}}$).
+But, $\beta_{\ol{s}} \ge_\mathrm{lr} \beta_{\ul{s}} \implies \beta_{\ol{s}} \ge_\mathrm{st} \beta_{\ul{s}}$
+(\cite[Theorem 1.C.1, p.43]{shaked2007}) giving the required result.
 \end{proof}
 
 When a large part of the observations is censored,
@@ -332,7 +342,7 @@ Let us first fix some notation, dropping the superscript $k$ for component types
 Assuming event times and censoring times ordered separately,
 we denote event times by $t_i$, $i=1, \ldots n_e$,
 and censoring times by $c_i$, $i=1, \ldots n_c$,
-thus $n_e + n_c = n$.
+where $n_e + n_c = n$.
 The \emph{risk set} at time $t$ gives the set of units at risk at time $t$,
 which is the set of observations that neither have had an event nor have been censored by time $t$,
 $\{n_i \mid n_i > t \} \cup \{ c_i \mid c_i > t \}$.
