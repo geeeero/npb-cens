@@ -18,7 +18,8 @@
 \usepackage{etoolbox}
 \usepackage{url}
 \usepackage{tikz}
-\usetikzlibrary{calc}
+\usetikzlibrary{calc,shapes.misc,decorations}
+\usetikzlibrary{decorations.pathreplacing}
 %\usetikzlibrary{shapes.misc,fit}
 
 \usepackage[bookmarks]{hyperref}
@@ -85,6 +86,30 @@
   \iftoggle{td}{%
     \todo[inline]{#1}%
   }{}%
+}
+
+\newcommand\fail[1][black]{%
+  \begin{tikzpicture}
+  [fail/.style={circle, draw, inner sep=0, minimum size=2mm, fill}]
+    \node [fail] (c) at (0.5,0) {};
+    \draw[thick] (0,0) -- (c);
+  \end{tikzpicture}%
+}
+
+\newcommand\cens[1][black]{%
+  \begin{tikzpicture}
+  [cens/.style={circle, draw, inner sep=0, minimum size=2mm}]
+    \node [cens] (c) at (0.5,0) {};
+    \draw[thick] (0,0) -- (c);
+  \end{tikzpicture}%
+}
+
+\def\brcpad{0.5mm}
+\newcommand\redis[4]{%
+  \draw[redistr] let \p1=(#1), \p2=(#2), \p3=(#3) in ($(\x2,\y1)+(\brcpad,0)$) -- ($(\x3,\y1)+(-\brcpad,0)$) node[midway,above=5pt] {#4};
+}
+\newcommand\svalue[3]{%
+  \path (#1) -- (#2) node[midway] {#3};
 }
 
 % ------------ options -------------
@@ -392,22 +417,41 @@ precisely because maintenance staff believes they will fail soon.
 \begin{figure}
 \centering
 \begin{tikzpicture}
-[fail/.style={circle,draw,inner sep=0, minimum size=2mm,fill=black},
- cens/.style={circle,draw,inner sep=0, minimum size=2mm}]
-\draw[->, thick] (0,0) -- (12, 0) node [below] {$t$};
-\node [fail] (t1) at (2,4) {};
-\node [cens, below=0.25 of t1, xshift=40] (c1) {};
-\node [cens, below=0.25 of c1, xshift=70] (c2) {};
-\node [fail, below=0.25 of c2, xshift=60] (t2) {};
-\foreach \obs in {t1, c1, c2, t2}
-  \draw[thick] let \p1=(\obs) in (0,\y1) -- (\obs);
+[fail/.style={circle, draw, inner sep=0, minimum size=2mm, fill=black},
+ cens/.style={circle, draw, inner sep=0, minimum size=2mm},
+ redistr/.style={thick, decorate, decoration={brace, raise=5pt}}]
+\coordinate (tanf) at ( 0,0);
+\coordinate (tend) at (12,0);
+\draw[->, thick] (tanf) -- (tend) node [below] {$t$};
+\node [fail] (t1) at (2,3) {};
+\node [cens] (c1) at ($(t1) + (2,-0.75)$) {};
+\node [cens] (c2) at ($(c1) + (3,-0.75)$) {};
+\node [fail] (t2) at ($(c2) + (2,-0.75)$) {};
+\foreach \obs/\lab in {t1/t_1, c1/c_1, c2/c_2, t2/t_2}
+  \draw[thick] let \p1=(\obs) in (0,\y1) -- (\obs) node[above left] {$\lab$};
+\redis{c1}{c1}{c2}{$1/3$}
+\redis{c1}{c2}{t2}{$1/3$}
+\redis{c1}{t2}{tend}{$1/3$}
+\redis{c2}{c2}{t2}{$1/2$}
+\redis{c2}{t2}{tend}{$1/2$}
+\foreach \obs/\nam in {tanf/tanfl, t1/t1l, c1/c1l, c2/c2l, t2/t2l, tend/tendl}
+  { \path let \p1=(\obs) in coordinate (\nam) at (\x1,-0.5);
+    \draw[dotted] (\obs) -- (\nam);
+  }
+%\path (tanfl) -- (t1l) node[midway] {$4$};
+\svalue{tanfl}{t1l}  {$4$}
+\svalue{t1l}  {c1l}  {$3$}
+\svalue{c1l}  {c2l}  {$2\frac{1}{3}$}
+\svalue{c2l}  {t2l}  {$1\frac{5}{6}$}
+\svalue{t2l}  {tendl}{$ \frac{5}{6}$}
 \end{tikzpicture}
-\caption{How to calculate $s^k_t$ based on the noninformative censoring assumption.}
+\caption{How to calculate $s^k_t$ based on the noninformative censoring assumption.
+\fail\ denotes an observed failure, while \cens\ denotes a censored observation.
+Numbers below the time axis give the resulting value of $s^k_t$.}
 \label{fig:noninf-cens1}
 \end{figure}
 
-
-
+% 
 
 
 
