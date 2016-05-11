@@ -392,8 +392,9 @@ setting infinity as the upper bound for the rightmost interval.
 
 When counting the number of functioning components at a time $t$,
 we can count the censored components accordingly:
-As an example, assume four components having failure and censoring times $t_1 < c_1 < c_2 < t_2$.
-Thus $n_{c_1} = 3$, as there is one more censoring time and one failure time after $c_1$.
+As an example, assume four components having failure and censoring times $t_1 < c_1 < c_2 < t_2$,
+see Figure~\ref{fig:noninf-cens1}.
+Here, $n_{c_1} = 3$, as there is one more censoring time and one failure time after $c_1$.
 We expect the component censored at $c_1$ to fail with $1/3$ probability in each of
 $(c_1, c_2]$, $(c_2, t_2]$, and $(t_2, \infty)$,
 that is, in each of these intervals we expect a third of a component to be functioning
@@ -434,11 +435,12 @@ precisely because maintenance staff believes they will fail soon.
 \redis{c1}{t2}{tend}{$1/3$}
 \redis{c2}{c2}{t2}{$1/2$}
 \redis{c2}{t2}{tend}{$1/2$}
-\foreach \obs/\nam in {tanf/tanfl, t1/t1l, c1/c1l, c2/c2l, t2/t2l, tend/tendl}
+\coordinate (tanfl) at ( 0,-0.5);
+\coordinate (tendl) at (12,-0.5);
+\foreach \obs/\nam in {t1/t1l, c1/c1l, c2/c2l, t2/t2l}
   { \path let \p1=(\obs) in coordinate (\nam) at (\x1,-0.5);
     \draw[dotted] (\obs) -- (\nam);
   }
-%\path (tanfl) -- (t1l) node[midway] {$4$};
 \svalue{tanfl}{t1l}  {$4$}
 \svalue{t1l}  {c1l}  {$3$}
 \svalue{c1l}  {c2l}  {$2\frac{1}{3}$}
@@ -447,11 +449,50 @@ precisely because maintenance staff believes they will fail soon.
 \end{tikzpicture}
 \caption{How to calculate $s^k_t$ based on the noninformative censoring assumption.
 \fail\ denotes an observed failure, while \cens\ denotes a censored observation.
-Numbers below the time axis give the resulting value of $s^k_t$.}
+Numbers below the time axis give the resulting value of $s_t$.}
 \label{fig:noninf-cens1}
 \end{figure}
 
-% 
+\bigskip
+\textbf{Alternative version:}\\
+
+When counting the number of functioning components at a time $t$,
+we can count the censored components accordingly:
+As an example, assume four components having failure and censoring times $t_1 < c_1 < c_2 < t_2$,
+see Figure~\ref{fig:noninf-cens2}.
+Here, $n_{c_1} = 3$, as there is one more censoring time and one failure time after $c_1$.
+We expect the component censored at $c_1$ to fail with $1/3$ probability in each of
+$(c_1, c_2]$, $(c_2, t_2]$, and $(t_2, \infty)$.
+that is, in each of these intervals we expect a third of a component to fail.
+So, at the end of the first interval, $2/3$ a component is functioning;
+at the end of the second interval, $1/3$ a component is functioning;
+and the component has entirely ceased to function at the end of the third interval (which is infinity).
+Likewise, we expect the second censored component to fail with $1/2$ probability
+in each of $(c_2, t_2]$ and $(t_2, \infty)$,
+and so expect it function with probability one half at $t_2$.
+
+The noninformative censoring assumption does not tell us, however,
+what is happening in between these interval ends.
+There are two ways to deal with this lack of information:
+via linear interpolation or through bounds.
+
+With linear interpolation, the contribution to $s_t$ of a censored component $c_i$ 
+is assumed to decrease linearly over each of the $n_{c_i}$ intervals.
+In the first interval, it decreases from $1$ to $(n_{c_i} - 1)/n_{c_i}$;
+in the second interval, from $(n_{c_i} - 1)/n_{c_i}$ to $(n_{c_i} - 2)/n_{c_i}$.
+(The slope thus depends on the interval widths.)
+Obviously, one needs to fix a finite upper bound for the rightmost interval,
+or taking the contribution to be constantly $1/n_{c_i}$ beyond the largest observation.
+
+With bounds, we instead do not assume anything about the decrease
+of the $s_t$ contribution over time,
+and give lower and upper bounds for it only.
+The lower bound assumes that in each interval,
+the ``one-$n_{c_i}$th failure'' happens at the start of the interval;
+the upper bound assumes it happens at the end of the interval.
+
+
+
 
 
 
