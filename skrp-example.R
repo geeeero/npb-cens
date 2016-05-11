@@ -67,4 +67,6 @@ e3plot <- e3plot + geom_line(aes(y=Upper, group=Item, colour=Item)) + geom_line(
 e3plot <- e3plot + geom_ribbon(aes(ymin=Lower, ymax=Upper, group=Item, colour=Item, fill=Item), alpha=0.5)
 e3plot <- e3plot + xlab("Days") + ylab("Survival Probability") + bottomlegend + scale_x_continuous(breaks=(0:10)*365)
 e3plot
+#e3plot + coord_cartesian(xlim=c(0,500), ylim=c(0.5,1))
+
 #
