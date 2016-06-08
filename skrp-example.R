@@ -9,9 +9,11 @@ names(skrpfielddata) <- c("time", "cens")
 skrpfielddata$cens <- as.numeric(skrpfielddata$cens == "Uncensored")
 skrpfielddata <- skrpfielddata[order(skrpfielddata$time),]
 skrpd <- data.frame(skrpfielddata, rank=rank(skrpfielddata$time))
+#pdf(width=5, height=5, "skrpdata1.pdf")
 qplot(data=skrpd, x=rank, ymin=rep(0,14), y=time, ymax=time, label=time, vjust=-0.5,
       geom=c("pointrange", "text"), shape=factor(cens)) + coord_flip() + scale_x_reverse() +
   scale_shape_manual(values=c(1, 19), label=c("No", "Yes"), name="Failure")
+#dev.off()
 
 # expert info: bearing lifetime in years
 skrpexpert <- read.csv("SKRP_DriveSideBearingSuctionPressEXPERT.csv", sep=";", header=FALSE,
@@ -23,7 +25,9 @@ g + geom_bar(aes(x=timeu, y=freq), stat="identity")
 
 skrpetimes <- (skrpexpert$timel + skrpexpert$timeu)/2
 skrpe <- data.frame(Time=rep(skrpetimes, times=skrpexpert$freq))
+#pdf(width=5, height=5, "skrpexpt1.pdf")
 ggplot(skrpe, aes(x=Time)) + geom_histogram(breaks=seq(0, 10, by=0.5))
+#dev.off()
 
 # transform into days
 skrpexpert$timel <- skrpexpert$timel * 365
@@ -68,5 +72,9 @@ e3plot <- e3plot + geom_ribbon(aes(ymin=Lower, ymax=Upper, group=Item, colour=It
 e3plot <- e3plot + xlab("Days") + ylab("Survival Probability") + bottomlegend + scale_x_continuous(breaks=(0:10)*365)
 e3plot
 #e3plot + coord_cartesian(xlim=c(0,500), ylim=c(0.5,1))
+
+#pdf(width=10, height=5, "skrpcens1.pdf")
+#e3plot
+#dev.off()
 
 #

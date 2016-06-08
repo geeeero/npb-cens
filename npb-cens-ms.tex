@@ -131,9 +131,12 @@
 
 \author[ein]{Gero Walter}
 \ead{g.m.walter@tue.nl}
-\author{and others}
+\author[dur]{Frank P.A. Coolen}
+\ead{frank.coolen@durham.ac.uk}
+\author{and others?}
 
 \address[ein]{School of Industrial Engineering, Eindhoven University of Technology, Eindhoven, NL}
+\address[dur]{Department of Mathematical Sciences, Durham University, Durham, UK}
 
 \begin{abstract}
 An imprecise Bayesian nonparametric approach
@@ -359,8 +362,20 @@ But, $\beta_{\ol{s}} \ge_\mathrm{lr} \beta_{\ul{s}} \implies \beta_{\ol{s}} \ge_
 When a large part of the observations is censored,
 this approach leads to high posterior imprecision,
 which may easily exceed prior imprecision.
-This is illustrated in ***bearing example?***
+This is illustrated in Figure~\ref{fig:skrp1} ***bearing example???***
 
+\begin{figure}
+\begin{tabular}{ccc}
+\includegraphics[width=0.45\textwidth]{skrpdata1}%
+&
+\includegraphics[width=0.45\textwidth]{skrpexpt1}\\
+\multicolumn{2}{c}{%
+\includegraphics[width=1.05\textwidth]{skrpcens1}%
+}
+\end{tabular}
+\caption{}
+\label{fig:skrp1}
+\end{figure}
 
 \section{Noninformative censoring assumption}
 
@@ -371,10 +386,10 @@ and censoring times by $c_i$, $i=1, \ldots n_c$,
 where $n_e + n_c = n$.
 The \emph{risk set} at time $t$ gives the set of units at risk at time $t$,
 which is the set of observations that neither have had an event nor have been censored by time $t$,
-$\{ i \mid n_i > t \} \cup \{ i \mid c_i > t \}$.
+$\{ i \mid t_i > t \} \cup \{ i \mid c_i > t \}$.
 We denote the size of the risk set just before a censoring time $c_i$ by $n_{c_i}$,
 % the moment of censoring of the $i$th censored observation
-i.e., $n_{c_i} = \#(\{ j \mid n_j \ge c_i \} \cup \{ j \mid c_j \ge c_i \})$.
+i.e., $n_{c_i} = \#(\{ j \mid t_j \ge c_i \} \cup \{ j \mid c_j \ge c_i \})$.
 %The risk set just before the moment of censoring
 %consists of these observations and the observation about to be censored.
 (Note that $n_{c_i}$ includes the unit corresponding to $c_i$.)
